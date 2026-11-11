@@ -290,7 +290,7 @@ struct FlowMapView: View {
 
                 if let destination = route.points.last {
                     let isRevealed = visiblePointCount >= route.points.count
-                    Annotation(route.region.title, coordinate: destination) {
+                    Annotation(route.region.localizedTitle, coordinate: destination) {
                         marker(for: route)
                             // Keep the annotation in MapKit's content bounds from
                             // frame one so `.automatic` can fit every destination,
@@ -344,9 +344,11 @@ struct FlowMapView: View {
             Image(systemName: "globe.americas")
                 .font(.system(size: Theme.Icon.hero))
                 .foregroundStyle(.tertiary)
-            Text(coordinator.visibleSessions.isEmpty && !coordinator.sessions.isEmpty
-                ? "No Matching Sessions" : "No Mappable Addresses")
-                .font(Theme.Typography.surfaceTitle)
+            Text(
+                coordinator.visibleSessions.isEmpty && !coordinator.sessions.isEmpty
+                    ? "No Matching Sessions" : "No Mappable Addresses"
+            )
+            .font(Theme.Typography.surfaceTitle)
             Text(mapEmptyReason)
                 .font(Theme.Typography.caption)
                 .foregroundStyle(.secondary)
@@ -368,7 +370,7 @@ struct FlowMapView: View {
                         } label: {
                             HStack(spacing: 5) {
                                 StatusDot(Theme.color(for: route.region))
-                                Text(route.region.title)
+                                Text(route.region.localizedTitle)
                                     .font(Theme.Typography.caption)
                                 Text(Self.bytes(route.bytes))
                                     .font(Theme.Typography.caption)
@@ -379,16 +381,18 @@ struct FlowMapView: View {
                             .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
-                        .help("Show only \(route.region.title) addresses")
+                        .help(String(localized: "Show only \(route.region.localizedTitle) addresses"))
                     }
                     Spacer(minLength: 0)
                 }
             }
-            Text("Destination addresses grouped by registry region. Map positions indicate address "
-                + "administration, not server locations; the capture origin is not shown.")
-                .font(Theme.Typography.micro)
-                .foregroundStyle(.tertiary)
-                .fixedSize(horizontal: false, vertical: true)
+            Text(
+                "Destination addresses grouped by registry region. Map positions indicate address "
+                    + "administration, not server locations; the capture origin is not shown."
+            )
+            .font(Theme.Typography.micro)
+            .foregroundStyle(.tertiary)
+            .fixedSize(horizontal: false, vertical: true)
         }
         .padding(.horizontal, Theme.Metrics.spacingL)
         .padding(.vertical, Theme.Metrics.spacingM)
@@ -406,7 +410,7 @@ struct FlowMapView: View {
     private var endpointList: some View {
         VStack(spacing: 0) {
             SectionHeader(
-                focusedRegion?.title ?? "Addresses",
+                focusedRegion?.localizedTitle ?? String(localized: "Addresses"),
                 detail: "\(listedEndpoints.count)"
             )
             .padding(.horizontal, Theme.Metrics.spacingL)
@@ -416,8 +420,16 @@ struct FlowMapView: View {
                 // the fold could not give one to belongs in no row, and saying
                 // how many is the difference between a bounded list and a list
                 // that quietly describes less than the surface claims.
-                Text("\(omittedSessionCount.formatted()) session"
-                    + "\(omittedSessionCount == 1 ? "" : "s") not listed — no destination address decoded.")
+                let omittedNotice = omittedSessionCount == 1
+                    ?
+                    String(
+                        localized: "\(omittedSessionCount.formatted()) session not listed — no destination address decoded."
+                    )
+                    :
+                    String(
+                        localized: "\(omittedSessionCount.formatted()) sessions not listed — no destination address decoded."
+                    )
+                Text(omittedNotice)
                     .font(Theme.Typography.micro)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -447,13 +459,17 @@ struct FlowMapView: View {
     private var listEmpty: some View {
         VStack(spacing: Theme.Metrics.spacingM) {
             Spacer()
-            Text(coordinator.visibleSessions.isEmpty
-                ?
-                (coordinator.sessions
-                    .isEmpty ? "No sessions in this capture." : "No addresses match the current scope.")
-                : "No addresses in this region.")
-                .font(Theme.Typography.caption)
-                .foregroundStyle(.secondary)
+            Text(
+                coordinator.visibleSessions.isEmpty
+                    ?
+                    (
+                        coordinator.sessions
+                            .isEmpty ? "No sessions in this capture." : "No addresses match the current scope."
+                    )
+                    : "No addresses in this region."
+            )
+            .font(Theme.Typography.caption)
+            .foregroundStyle(.secondary)
             Spacer()
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -488,11 +504,15 @@ struct FlowMapView: View {
         .onTapGesture { toggleFocus(route.region) }
         .accessibilityAddTraits(.isButton)
         .accessibilityAction { toggleFocus(route.region) }
-        .accessibilityLabel("\(route.region.title) registry region")
-        .accessibilityHint("Registry region administering these addresses, not a server location. "
-            + "\(route.sessions) sessions.")
-        .help("\(route.region.title) — \(route.sessions) sessions, \(Self.bytes(route.bytes)). "
-            + "Registry region, not a server location. Click to filter the list.")
+        .accessibilityLabel(String(localized: "\(route.region.localizedTitle) registry region"))
+        .accessibilityHint(
+            "Registry region administering these addresses, not a server location. "
+                + "\(route.sessions) sessions."
+        )
+        .help(String(
+            localized:
+            "\(route.region.localizedTitle) — \(route.sessions.formatted()) sessions, \(Self.bytes(route.bytes)). Registry region, not a server location. Click to filter the list."
+        ))
     }
 
     private func endpointRow(_ endpoint: FlowEndpoint) -> some View {
@@ -558,7 +578,7 @@ struct FlowMapView: View {
             }
 
             HStack(spacing: Theme.Metrics.spacingM) {
-                Text(endpoint.region.title)
+                Text(endpoint.region.localizedTitle)
                     .font(Theme.Typography.micro)
                     .foregroundStyle(.secondary)
                 if let registry = endpoint.region.registry {
@@ -590,9 +610,11 @@ struct FlowMapView: View {
             .tracexyGlassButtonStyle()
             .controlSize(.small)
             .disabled(isStaleDestination(endpoint))
-            .help(isStaleDestination(endpoint)
-                ? "The session list is already scoped to another destination address."
-                : "Narrow the current scope to sessions sent to \(endpoint.address)")
+            .help(
+                isStaleDestination(endpoint)
+                    ? "The session list is already scoped to another destination address."
+                    : "Narrow the current scope to sessions sent to \(endpoint.address)"
+            )
             .padding(.top, 2)
         }
         .padding(.horizontal, Theme.Metrics.spacingL)
@@ -772,6 +794,22 @@ struct FlowMapView: View {
 
     private func weight(for bytes: Int) -> Double {
         1 + 4 * (Double(bytes) / Double(maxBytes))
+    }
+}
+
+// MARK: - EndpointRegion UI localization
+
+private extension EndpointRegion {
+    var localizedTitle: String {
+        switch self {
+        case .northAmerica: String(localized: "North America")
+        case .europe: String(localized: "Europe / Middle East")
+        case .asiaPacific: String(localized: "Asia-Pacific")
+        case .latinAmerica: String(localized: "Latin America")
+        case .africa: String(localized: "Africa")
+        case .local: String(localized: "Local network")
+        case .unknown: String(localized: "Unresolved")
+        }
     }
 }
 
