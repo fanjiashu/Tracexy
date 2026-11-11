@@ -356,9 +356,11 @@ struct SessionFilterBar: View {
         .tracexyGlassButtonStyle()
         .controlSize(.small)
         .disabled(disabled)
-        .help(disabled
-            ? "Filter limit reached — up to \(maxRules) rules per workspace"
-            : "Add a field to the advanced filter")
+        .help(
+            disabled
+                ? "Filter limit reached — up to \(maxRules) rules per workspace"
+                : "Add a field to the advanced filter"
+        )
         .accessibilityLabel("Add field")
     }
 
@@ -381,9 +383,7 @@ struct SessionFilterBar: View {
         }
         .tracexyGlassButtonStyle()
         .controlSize(.small)
-        .help(count > 0
-            ? "\(count) advanced rule\(count == 1 ? "" : "s") active — click to \(isOn ? "hide" : "show") the builder"
-            : "Show the advanced filter rule builder")
+        .help(advancedFilterHelp(count: count, isOn: isOn))
         .accessibilityLabel("Advanced filters")
         .accessibilityValue("\(count) active")
     }
@@ -418,11 +418,27 @@ struct SessionFilterBar: View {
         .tracexyGlassButtonStyle()
         .controlSize(.small)
         .fixedSize()
-        .help(isGrouped
-            ? "Grouping by \(workspace.sessionGrouping.title) — click to change"
-            : "Group the session list")
+        .help(
+            isGrouped
+                ? "Grouping by \(workspace.sessionGrouping.title) — click to change"
+                : "Group the session list"
+        )
         .accessibilityLabel("Group sessions")
         .accessibilityValue(isGrouped ? workspace.sessionGrouping.title : "None")
+    }
+
+    private func advancedFilterHelp(count: Int, isOn: Bool) -> String {
+        guard count > 0 else {
+            return String(localized: "Show the advanced filter rule builder")
+        }
+        if count == 1 {
+            return isOn
+                ? String(localized: "1 advanced rule active — click to hide the builder")
+                : String(localized: "1 advanced rule active — click to show the builder")
+        }
+        return isOn
+            ? String(localized: "\(count) advanced rules active — click to hide the builder")
+            : String(localized: "\(count) advanced rules active — click to show the builder")
     }
 
     /// "Add Field": if the advanced editor is hidden, reveal it *without* adding

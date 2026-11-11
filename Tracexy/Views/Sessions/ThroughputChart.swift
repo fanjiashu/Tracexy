@@ -51,12 +51,18 @@ struct ThroughputChart: View {
     static func accessibilityValue(for samples: [ThroughputSample]) -> String {
         let rates = samples.map(\.bytesPerSecond)
         guard let low = rates.min(), let high = rates.max(), let current = rates.last else {
-            return "No throughput samples yet"
+            return String(localized: "No throughput samples yet")
         }
-        let sampleWord = samples.count == 1 ? "sample" : "samples"
-        return "\(samples.count.formatted()) \(sampleWord). "
-            + "Now \(Self.rate(current)). Peak \(Self.rate(high)). "
-            + "Range \(Self.rate(low)) to \(Self.rate(high))."
+        let currentRate = Self.rate(current)
+        let peakRate = Self.rate(high)
+        let lowRate = Self.rate(low)
+        let highRate = Self.rate(high)
+        if samples.count == 1 {
+            return String(localized: "1 sample. Now \(currentRate). Peak \(peakRate). Range \(lowRate) to \(highRate).")
+        }
+        return String(
+            localized: "\(samples.count.formatted()) samples. Now \(currentRate). Peak \(peakRate). Range \(lowRate) to \(highRate)."
+        )
     }
 
     // MARK: Private
@@ -64,6 +70,6 @@ struct ThroughputChart: View {
     private static func rate(_ bytesPerSecond: Double) -> String {
         let clamped = bytesPerSecond.rounded()
         let bytes = Int64(exactly: clamped.isFinite ? max(clamped, 0) : 0) ?? Int64.max
-        return "\(ByteUnits.string(bytes)) per second"
+        return String(localized: "\(ByteUnits.string(bytes)) per second")
     }
 }

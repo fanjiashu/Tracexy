@@ -249,7 +249,7 @@ struct SessionCommandBar: View {
             .disabled(!descriptor.isEnabled)
             .help(descriptor.help)
             .accessibilityLabel(descriptor.title)
-            .accessibilityValue(descriptor.isActive ? "On" : "Off")
+            .accessibilityValue(descriptor.isActive ? String(localized: "On") : String(localized: "Off"))
         } else {
             Button {
                 onAction(descriptor.id)

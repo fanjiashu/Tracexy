@@ -311,15 +311,33 @@ nonisolated enum SessionStatusBarModel {
 /// keyset page exists; it never presents a loaded-page subtotal as a database-wide
 /// exact total.
 nonisolated enum HistoryFooterModel {
-    static func statusText(captureCount: Int, sessionCount: Int, hasMore: Bool) -> String {
+    static func statusText(
+        captureCount: Int,
+        sessionCount: Int,
+        hasMore: Bool
+    )
+        -> String
+    {
         guard captureCount > 0 else {
-            return "No saved captures"
+            return String(localized: "No saved captures")
         }
-        let suffix = hasMore ? "+" : ""
-        let captureLabel = captureCount == 1 && !hasMore ? "capture" : "captures"
-        let sessionLabel = sessionCount == 1 && !hasMore ? "session" : "sessions"
-        return "\(captureCount.formatted())\(suffix) \(captureLabel), "
-            + "\(sessionCount.formatted())\(suffix) \(sessionLabel)"
+        let captureAmount = captureCount.formatted()
+        let sessionAmount = sessionCount.formatted()
+        let captureSummary = if captureCount == 1, !hasMore {
+            String(localized: "1 capture")
+        } else if hasMore {
+            String(localized: "\(captureAmount)+ captures")
+        } else {
+            String(localized: "\(captureAmount) captures")
+        }
+        let sessionSummary = if sessionCount == 1, !hasMore {
+            String(localized: "1 session")
+        } else if hasMore {
+            String(localized: "\(sessionAmount)+ sessions")
+        } else {
+            String(localized: "\(sessionAmount) sessions")
+        }
+        return String(localized: "\(captureSummary), \(sessionSummary)")
     }
 }
 
