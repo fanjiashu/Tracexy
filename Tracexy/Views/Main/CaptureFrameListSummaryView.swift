@@ -36,8 +36,11 @@ struct CaptureFrameListSummaryView: View {
                         .help("These frames could not be decoded enough to decide the Frame Expression.")
                 }
             } else if state.acceptedFrameExpression != nil, state.frameExpressionUnknownCount > 0 {
+                let count = state.frameExpressionUnknownCount.formatted()
                 Text(
-                    "\(state.frameExpressionUnknownCount.formatted()) \(state.frameExpressionUnknownCount == 1 ? "frame" : "frames") unknown to filter"
+                    state.frameExpressionUnknownCount == 1
+                        ? String(localized: "1 frame unknown to filter")
+                        : String(localized: "\(count) frames unknown to filter")
                 )
                 .help(
                     "These retained frames were truncated or could not be decoded enough to decide the Frame Expression; they are not shown as matches."
