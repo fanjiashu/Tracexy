@@ -113,8 +113,10 @@ struct OverviewProtocolChart: View {
             }
         }
         .accessibilityLabel("Session bytes by protocol")
-        .accessibilityValue(rows.map { "\($0.title) \($0.fraction.formatted(.percent.precision(.fractionLength(0))))" }
-            .joined(separator: ", "))
+        .accessibilityValue(
+            rows.map { "\($0.title) \($0.fraction.formatted(.percent.precision(.fractionLength(0))))" }
+                .joined(separator: ", ")
+        )
     }
 }
 
@@ -168,6 +170,8 @@ struct OverviewSeverityChart: View {
 /// the traffic chart above it, so bursts of new conversations line up with
 /// bursts of bytes.
 struct OverviewSessionStartChart: View {
+    // MARK: Internal
+
     struct Column: Identifiable {
         let date: Date
         let count: Int
@@ -190,20 +194,24 @@ struct OverviewSessionStartChart: View {
         Chart(columns) { column in
             BarMark(
                 x: .value("Time", column.date, unit: .second),
-                y: .value(series == .sessions ? "Sessions" : "Segments", column.count),
+                y: .value(seriesLabel, column.count),
                 width: .automatic
             )
-            .foregroundStyle(series == .sessions ? Color.accentColor.gradient : Theme.color(for: SessionStatus.warning)
-                .gradient)
+            .foregroundStyle(
+                series == .sessions ? Color.accentColor.gradient : Theme.color(for: SessionStatus.warning)
+                    .gradient
+            )
         }
         .chartXAxis {
             AxisMarks(values: .automatic(desiredCount: 2)) { value in
                 AxisValueLabel {
                     if let date = value.as(Date.self) {
-                        Text(width >= 60
-                            ? date.formatted(.dateTime.hour().minute())
-                            : date.formatted(.dateTime.hour().minute().second()))
-                            .font(Theme.Typography.micro)
+                        Text(
+                            width >= 60
+                                ? date.formatted(.dateTime.hour().minute())
+                                : date.formatted(.dateTime.hour().minute().second())
+                        )
+                        .font(Theme.Typography.micro)
                     }
                 }
                 .foregroundStyle(.tertiary)
@@ -220,11 +228,34 @@ struct OverviewSessionStartChart: View {
                 .foregroundStyle(.tertiary)
             }
         }
-        .accessibilityLabel(series == .sessions ? "Sessions started over time" : "Retransmitted segments over time")
-        .accessibilityValue(
-            "\(columns.reduce(0) { $0 + $1.count }) \(series == .sessions ? "sessions" : "segments")"
-                + " across \(columns.count) slices"
+        .accessibilityLabel(
+            series == .sessions
+                ? String(localized: "Sessions started over time")
+                : String(localized: "Retransmitted segments over time")
         )
+        .accessibilityValue(Self.accessibilityValue(for: columns, series: series))
+    }
+
+    // MARK: Private
+
+    private var seriesLabel: String {
+        switch series {
+        case .sessions:
+            String(localized: "Sessions")
+        case .retransmissions:
+            String(localized: "Segments")
+        }
+    }
+
+    private static func accessibilityValue(for columns: [Column], series: Series) -> String {
+        let total = columns.reduce(0) { $0 + $1.count }.formatted()
+        let slices = columns.count.formatted()
+        switch series {
+        case .sessions:
+            return String(localized: "\(total) sessions across \(slices) slices")
+        case .retransmissions:
+            return String(localized: "\(total) retransmitted segments across \(slices) slices")
+        }
     }
 }
 
