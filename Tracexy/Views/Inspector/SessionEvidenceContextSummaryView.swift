@@ -58,7 +58,7 @@ struct SessionEvidenceContextSummaryView: View {
         let connections = selection.connections
         var fields = [
             ContextTableField(
-                label: connections.count == 1 ? "Connection" : "Incarnations",
+                label: connections.count == 1 ? String(localized: "Connection") : String(localized: "Incarnations"),
                 value: connections.count.formatted()
             ),
             ContextTableField(

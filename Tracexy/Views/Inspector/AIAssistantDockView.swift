@@ -469,7 +469,7 @@ private struct AssistantMessageRow: View {
                     .font(.system(size: Theme.Icon.medium))
                     .foregroundStyle(.secondary)
                     .accessibilityHidden(true)
-                Text(message.role == .user ? "You" : "Assistant")
+                Text(message.role == .user ? String(localized: "You") : String(localized: "Assistant"))
                     .font(Theme.Typography.microEmphasis)
                     .foregroundStyle(.secondary)
                 if message.state.isStreaming {

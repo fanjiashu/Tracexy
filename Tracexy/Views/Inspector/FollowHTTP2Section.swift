@@ -97,9 +97,11 @@ struct FollowHTTP2Section: View {
                     }
                     .buttonStyle(.link)
                     .font(Theme.Typography.captionMedium)
-                    .accessibilityLabel(expandedStreams.contains(row.id)
-                        ? "Hide headers for stream \(row.id)"
-                        : "Show headers for stream \(row.id)")
+                    .accessibilityLabel(
+                        expandedStreams.contains(row.id)
+                            ? "Hide headers for stream \(row.id)"
+                            : "Show headers for stream \(row.id)"
+                    )
                 }
                 frameLink("Request", provenance: row.requestFrame)
                     .accessibilityLabel("Open request frame for stream \(row.id)")
@@ -143,7 +145,7 @@ struct FollowHTTP2Section: View {
 
     private func frameRow(_ row: FollowHTTP2FrameRow) -> some View {
         HStack(spacing: Theme.Metrics.spacingM) {
-            Text(row.fromClient ? "Client" : "Server")
+            Text(row.fromClient ? String(localized: "Client") : String(localized: "Server"))
                 .font(Theme.Typography.captionMedium)
                 .foregroundStyle(.secondary)
                 .frame(width: 44, alignment: .leading)
@@ -180,8 +182,10 @@ struct FollowHTTP2Section: View {
         .buttonStyle(.link)
         .font(Theme.Typography.captionMedium)
         .disabled(provenance?.locator == nil)
-        .help(provenance?.locator == nil
-            ? "This frame cannot be opened from the current source."
-            : "Open this frame in Layers")
+        .help(
+            provenance?.locator == nil
+                ? "This frame cannot be opened from the current source."
+                : "Open this frame in Layers"
+        )
     }
 }

@@ -586,11 +586,13 @@ struct ContextDockView: View {
             }
 
             if activity.isContested {
-                Text("Also resolved to this address: \(activity.competingNames.joined(separator: ", ")). "
-                    + "The grouping cannot be confirmed from DNS alone.")
-                    .font(Theme.Typography.micro)
-                    .foregroundStyle(.orange)
-                    .fixedSize(horizontal: false, vertical: true)
+                Text(
+                    "Also resolved to this address: \(activity.competingNames.joined(separator: ", ")). "
+                        + "The grouping cannot be confirmed from DNS alone."
+                )
+                .font(Theme.Typography.micro)
+                .foregroundStyle(.orange)
+                .fixedSize(horizontal: false, vertical: true)
             }
 
             Button("Ungroup Sessions") {
@@ -671,8 +673,10 @@ struct ContextDockView: View {
                                 }
                             }
                             .disabled(coordinator.allFramesUnavailableReason != nil)
-                            .help(coordinator.allFramesUnavailableReason
-                                ?? "Rescan the stable capture source for this TCP session")
+                            .help(
+                                coordinator.allFramesUnavailableReason
+                                    ?? "Rescan the stable capture source for this TCP session"
+                            )
                             if tcpHealthScan.result != nil, isCurrent {
                                 Button("Use Retained Overview") { tcpHealthScan.reset() }
                             }
@@ -711,16 +715,17 @@ struct ContextDockView: View {
     private static func baselineAccessibilityValue(_ history: [BaselinePoint]) -> String {
         let values = history.map(\.milliseconds).sorted()
         guard let low = values.first, let high = values.last else {
-            return "No baseline samples"
+            return String(localized: "No baseline samples")
         }
         let middle = values.count.isMultiple(of: 2)
             ? (values[values.count / 2 - 1] + values[values.count / 2]) / 2
             : values[values.count / 2]
-        let sessionWord = history.count == 1 ? "session" : "sessions"
-        var phrase = "\(history.count.formatted()) \(sessionWord) on this host. "
-            + "Median \(ms(middle)). Range \(ms(low)) to \(ms(high))."
+        let sessionSummary = history.count == 1
+            ? String(localized: "1 session on this host")
+            : String(localized: "\(history.count.formatted()) sessions on this host")
+        var phrase = String(localized: "\(sessionSummary). Median \(ms(middle)). Range \(ms(low)) to \(ms(high)).")
         if let current = history.first(where: \.isCurrent) {
-            phrase += " This session \(ms(current.milliseconds))."
+            phrase += " " + String(localized: "This session \(ms(current.milliseconds)).")
         }
         return phrase
     }

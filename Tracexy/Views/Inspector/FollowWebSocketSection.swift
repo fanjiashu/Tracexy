@@ -45,10 +45,12 @@ struct FollowWebSocketSection: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         } label: {
-            Text(webSocket.messageCount == 1
-                ? "WebSocket, 1 message"
-                : "WebSocket, \(webSocket.messageCount.formatted()) messages")
-                .font(Theme.Typography.captionMedium)
+            Text(
+                webSocket.messageCount == 1
+                    ? "WebSocket, 1 message"
+                    : "WebSocket, \(webSocket.messageCount.formatted()) messages"
+            )
+            .font(Theme.Typography.captionMedium)
         }
         .accessibilityIdentifier("follow.websocket")
     }
@@ -59,7 +61,7 @@ struct FollowWebSocketSection: View {
 
     private func messageRow(_ row: FollowWebSocketMessageRow) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: Theme.Metrics.spacingM) {
-            Text(row.fromClient ? "Client" : "Server")
+            Text(row.fromClient ? String(localized: "Client") : String(localized: "Server"))
                 .font(Theme.Typography.captionMedium)
                 .foregroundStyle(.secondary)
                 .frame(width: 44, alignment: .leading)
@@ -76,9 +78,11 @@ struct FollowWebSocketSection: View {
             Text(row.size)
                 .font(Theme.Typography.monoMicro)
                 .foregroundStyle(.secondary)
-                .help(row.isCompressed
-                    ? "Size after decompressing; the message was compressed with permessage-deflate"
-                    : "Message size")
+                .help(
+                    row.isCompressed
+                        ? "Size after decompressing; the message was compressed with permessage-deflate"
+                        : "Message size"
+                )
             frameLink(provenance: row.frame)
                 .accessibilityLabel("Open the first frame of \(row.kind) message \(row.id + 1)")
         }
@@ -88,7 +92,7 @@ struct FollowWebSocketSection: View {
 
     private func frameRow(_ row: FollowWebSocketFrameRow) -> some View {
         HStack(spacing: Theme.Metrics.spacingM) {
-            Text(row.fromClient ? "Client" : "Server")
+            Text(row.fromClient ? String(localized: "Client") : String(localized: "Server"))
                 .font(Theme.Typography.captionMedium)
                 .foregroundStyle(.secondary)
                 .frame(width: 44, alignment: .leading)
@@ -119,9 +123,11 @@ struct FollowWebSocketSection: View {
         .buttonStyle(.link)
         .font(Theme.Typography.captionMedium)
         .disabled(provenance?.locator == nil)
-        .help(provenance?.locator == nil
-            ? "This frame cannot be opened from the current source."
-            : "Open this frame in Layers")
+        .help(
+            provenance?.locator == nil
+                ? "This frame cannot be opened from the current source."
+                : "Open this frame in Layers"
+        )
     }
 
     private static func flags(_ row: FollowWebSocketFrameRow) -> String {

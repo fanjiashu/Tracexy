@@ -174,7 +174,7 @@ struct SessionStreamHealthView: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(chart.title) chart. \(chart.axisCaption)")
+        .accessibilityLabel(String(localized: "\(chart.title) chart. \(chart.axisCaption)"))
         .accessibilityValue(Self.accessibilityValue(for: chart))
     }
 
@@ -203,8 +203,11 @@ struct SessionStreamHealthView: View {
         guard let end = point.rangeEnd else {
             return start
         }
-        let suffix = role == .sequencePayload ? " (exclusive end)" : ""
-        return "\(start) to \(SessionStreamHealth.valueLabel(end, role: role))\(suffix)"
+        let endLabel = SessionStreamHealth.valueLabel(end, role: role)
+        if role == .sequencePayload {
+            return String(localized: "\(start) to \(endLabel) (exclusive end)")
+        }
+        return String(localized: "\(start) to \(endLabel)")
     }
 
     @ChartContentBuilder
@@ -348,13 +351,15 @@ private extension SessionStreamHealthView {
         chart.lines.map { line in
             let values = line.points.map(\.value) + line.points.compactMap(\.rangeEnd)
             guard let low = values.min(), let high = values.max() else {
-                return "\(line.label), no points"
+                return String(localized: "\(line.label), no points")
             }
             let pointCount = line.points.count
-            let pointWord = pointCount == 1 ? "point" : "points"
-            return "\(line.label), \(pointCount.formatted()) \(pointWord), "
-                + "\(SessionStreamHealth.valueLabel(low, role: line.role)) to "
-                + "\(SessionStreamHealth.valueLabel(high, role: line.role))"
+            let lowLabel = SessionStreamHealth.valueLabel(low, role: line.role)
+            let highLabel = SessionStreamHealth.valueLabel(high, role: line.role)
+            if pointCount == 1 {
+                return String(localized: "\(line.label), 1 point, \(lowLabel) to \(highLabel)")
+            }
+            return String(localized: "\(line.label), \(pointCount.formatted()) points, \(lowLabel) to \(highLabel)")
         }
         .joined(separator: ". ")
     }
