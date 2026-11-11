@@ -1,5 +1,7 @@
 import Foundation
 
+// MARK: - SessionStreamChartLine
+
 // This file owns every user-visible word and number for the TCP health charts,
 // exactly as `SessionResponseTimes` owns the response-time rows: the view below it
 // draws marks and axes only, so the claims stay testable without a window. It reads
@@ -13,8 +15,6 @@ import Foundation
 //    "server", "up" or "down", which the passive fold does not know.
 // 3. What the chart does *not* cover is stated once, beneath it, in at most two
 //    lines: where the retained run ends, and what is known about fidelity.
-
-// MARK: - SessionStreamChartLine
 
 /// One line ready to draw: the phrase naming it, the canonical direction it is about,
 /// and the points in capture order.
@@ -90,17 +90,17 @@ nonisolated struct SessionStreamChartLine: Identifiable, Hashable, Sendable {
     {
         let endpoint = direction == .aToB ? tuple.a.display : tuple.b.display
         return switch role {
-        case .sackRoundTrip: "SACK-reported RTT from \(endpoint)"
+        case .sackRoundTrip: String(localized: "SACK-reported RTT from \(endpoint)")
         case .roundTrip,
              .sequenceReached,
-             .throughput: "Sent by \(endpoint)"
-        case .sequencePayload: "Payload from \(endpoint)"
-        case .goodput: "ACKed from \(endpoint)"
-        case .sackRange: "SACK range \((variant + 1).formatted()) reported for \(endpoint)"
-        case .duplicateSACKRange: "D-SACK range reported for \(endpoint)"
-        case .sequenceAcknowledged: "Acknowledged to \(endpoint)"
-        case .receiveWindowOffered: "Offered to \(endpoint)"
-        case .bytesInFlight: "Unacknowledged from \(endpoint)"
+             .throughput: String(localized: "Sent by \(endpoint)")
+        case .sequencePayload: String(localized: "Payload from \(endpoint)")
+        case .goodput: String(localized: "ACKed from \(endpoint)")
+        case .sackRange: String(localized: "SACK range \((variant + 1).formatted()) reported for \(endpoint)")
+        case .duplicateSACKRange: String(localized: "D-SACK range reported for \(endpoint)")
+        case .sequenceAcknowledged: String(localized: "Acknowledged to \(endpoint)")
+        case .receiveWindowOffered: String(localized: "Offered to \(endpoint)")
+        case .bytesInFlight: String(localized: "Unacknowledged from \(endpoint)")
         }
     }
 }
@@ -127,10 +127,10 @@ nonisolated struct SessionStreamChart: Identifiable, Hashable, Sendable {
     /// to stay readable in a narrow inspector column.
     static func name(for kind: TCPStreamSeriesKind) -> String {
         switch kind {
-        case .sequence: "Sequence"
-        case .throughput: "Throughput"
-        case .roundTrip: "Round Trip"
-        case .receiveWindow: "Window"
+        case .sequence: String(localized: "Sequence")
+        case .throughput: String(localized: "Throughput")
+        case .roundTrip: String(localized: "Round Trip")
+        case .receiveWindow: String(localized: "Window")
         }
     }
 
@@ -139,10 +139,10 @@ nonisolated struct SessionStreamChart: Identifiable, Hashable, Sendable {
     /// relative to.
     static func caption(for kind: TCPStreamSeriesKind) -> String {
         switch kind {
-        case .sequence: "Bytes past each direction's first observed sequence number"
-        case .throughput: "Wire bytes sent and receiver-ACKed sequence bytes per second"
-        case .roundTrip: "Seconds from data to cumulative ACK or receiver SACK report"
-        case .receiveWindow: "Bytes"
+        case .sequence: String(localized: "Bytes past each direction's first observed sequence number")
+        case .throughput: String(localized: "Wire bytes sent and receiver-ACKed sequence bytes per second")
+        case .roundTrip: String(localized: "Seconds from data to cumulative ACK or receiver SACK report")
+        case .receiveWindow: String(localized: "Bytes")
         }
     }
 }
@@ -165,12 +165,18 @@ nonisolated struct SessionStreamHealth: Hashable, Sendable {
             let total = lines.reduce(0) { $0 + $1.originalPointCount }
             let drawn = lines.reduce(0) { $0 + $1.points.count }
             let displayNote = drawn < total
-                ? "\(drawn.formatted()) of \(total.formatted()) points are drawn; each capture-order group keeps its first, last, minimum and maximum."
+                ?
+                String(
+                    localized: "\(drawn.formatted()) of \(total.formatted()) points are drawn; each capture-order group keeps its first, last, minimum and maximum."
+                )
                 : nil
             let caveat = [Self.caveat(for: kind, coverage: health.coverage), displayNote]
                 .compactMap { $0 }.joined(separator: " ")
             let duplicateSACKCaveat = kind == .sequence && lines.contains { $0.role == .duplicateSACKRange }
-                ? "D-SACK is the receiver's report of duplicate sequence data; it does not identify the cause."
+                ?
+                String(
+                    localized: "D-SACK is the receiver's report of duplicate sequence data; it does not identify the cause."
+                )
                 : nil
             let chartCaveat = [caveat.isEmpty ? nil : caveat, duplicateSACKCaveat]
                 .compactMap { $0 }.joined(separator: " ")
@@ -216,31 +222,31 @@ nonisolated struct SessionStreamHealth: Hashable, Sendable {
     static func caveats(for coverage: TCPStreamCoverage) -> [String] {
         var lines: [String] = []
         if coverage.isTruncated, let first = coverage.firstOrdinal, let last = coverage.lastOrdinal {
-            lines.append(
-                "These charts cover frames \(first.formatted()) to \(last.formatted()) of this session; "
-                    + "\(coverage.omittedSegmentCount.formatted()) later segments were not retained."
-            )
+            lines.append(String(
+                localized:
+                "These charts cover frames \(first.formatted()) to \(last.formatted()) of this session; \(coverage.omittedSegmentCount.formatted()) later segments were not retained."
+            ))
         }
         if coverage.untimedSegmentCount > 0 {
-            lines.append(
-                "\(coverage.untimedSegmentCount.formatted()) retained segments carried no capture time "
-                    + "and are not plotted."
-            )
+            lines.append(String(
+                localized:
+                "\(coverage.untimedSegmentCount.formatted()) retained segments carried no capture time and are not plotted."
+            ))
         } else if coverage.lossKnowledge == .lossReported {
-            lines.append(
-                "Capture loss was reported for this session, so segments may be missing between "
-                    + "the points drawn here."
-            )
+            lines.append(String(
+                localized:
+                "Capture loss was reported for this session, so segments may be missing between the points drawn here."
+            ))
         } else if coverage.snapLengthTruncationObserved {
-            lines.append(
-                "At least one segment was captured shorter than it was sent, so a payload length "
-                    + "here may be below what crossed the wire."
-            )
+            lines.append(String(
+                localized:
+                "At least one segment was captured shorter than it was sent, so a payload length here may be below what crossed the wire."
+            ))
         } else if coverage.lossKnowledge == .unknown {
-            lines.append(
-                "This capture reports nothing about dropped frames, so completeness between "
-                    + "these points is unknown."
-            )
+            lines.append(String(
+                localized:
+                "This capture reports nothing about dropped frames, so completeness between these points is unknown."
+            ))
         }
         return Array(lines.prefix(2))
     }
@@ -249,10 +255,16 @@ nonisolated struct SessionStreamHealth: Hashable, Sendable {
     static func caveat(for kind: TCPStreamSeriesKind, coverage: TCPStreamCoverage) -> String? {
         if kind == .sequence {
             let omittedPayload = coverage.unplottablePayloadRangeCount > 0
-                ? "\(coverage.unplottablePayloadRangeCount.formatted()) captured payload ranges crossed the unambiguous relative sequence boundary and were omitted."
+                ?
+                String(
+                    localized: "\(coverage.unplottablePayloadRangeCount.formatted()) captured payload ranges crossed the unambiguous relative sequence boundary and were omitted."
+                )
                 : nil
             let omittedSACK = coverage.unplottableSACKRangeCount > 0
-                ? "\(coverage.unplottableSACKRangeCount.formatted()) receiver-reported SACK ranges could not be placed in one unambiguous relative sequence range."
+                ?
+                String(
+                    localized: "\(coverage.unplottableSACKRangeCount.formatted()) receiver-reported SACK ranges could not be placed in one unambiguous relative sequence range."
+                )
                 : nil
             let message = [omittedPayload, omittedSACK].compactMap { $0 }.joined(separator: " ")
             if !message.isEmpty {
@@ -261,16 +273,24 @@ nonisolated struct SessionStreamHealth: Hashable, Sendable {
         }
         if kind == .roundTrip {
             let ambiguity = coverage.ambiguousRoundTripSampleCount > 0
-                ? "\(coverage.ambiguousRoundTripSampleCount.formatted()) cumulative-ACK RTT candidates were excluded because an overlapping sequence range made their acknowledgements ambiguous."
+                ?
+                String(
+                    localized: "\(coverage.ambiguousRoundTripSampleCount.formatted()) cumulative-ACK RTT candidates were excluded because an overlapping sequence range made their acknowledgements ambiguous."
+                )
                 : nil
-            let sack = "SACK-reported RTT uses the first retained exact-range block and reports receiver observation, not application delivery."
+            let sack =
+                String(
+                    localized: "SACK-reported RTT uses the first retained exact-range block and reports receiver observation, not application delivery."
+                )
             return [ambiguity, sack].compactMap { $0 }.joined(separator: " ")
         }
         guard kind == .receiveWindow, coverage.windowScaling == .notObserved else {
             return nil
         }
-        return "No SYN carrying a window scale was retained for one side, so these are the raw "
-            + "advertised values and the real window may be larger."
+        return String(
+            localized:
+            "No SYN carrying a window scale was retained for one side, so these are the raw advertised values and the real window may be larger."
+        )
     }
 
     /// The shared formatter for one plotted value, chosen by its role so the same
